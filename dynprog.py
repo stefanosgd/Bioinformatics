@@ -3,15 +3,17 @@ import numpy as np
 
 def dynprog(lang, s_mat, a, b):
     final_score = 0
-    a = a + "-"
-    b = b + "-"
-    backtrack = np.zeros((len(a), len(b)), dtype=np.int)
+    a = a[::-1]
+    b = b[::-1]
+    backtrack = np.zeros((len(a)+1, len(b)+1), dtype=np.int)
+    print(backtrack)
     out_a = np.arange(len(a), dtype=np.int).tolist()
     out_b = np.arange(len(b), dtype=np.int).tolist()
     # print(backtrack)
-    final_score = align(lang, s_mat, backtrack, a, b)
+    backtrack = align(lang, s_mat, backtrack, a, b)
     # score(lang, s_mat, a, b)
-    return [final_score, out_a, out_b]
+    return backtrack
+    # return [final_score, out_a, out_b]
 
 
 def score(lang, s_mat, a, b):
@@ -24,29 +26,48 @@ def score(lang, s_mat, a, b):
 
 
 def align(lang, s_mat, b_mat, a, b):
-    # print(len(a), a, len(b), b)
-    # print(b_mat)
-    if (a == "-") and (b == "-"):
-        return 0
-    elif a == "-":
-        return score(lang, s_mat, a[0], b[0]) + align(lang, s_mat, b_mat, a, b[1:])
-    elif b == "-":
-        return score(lang, s_mat, a[0], b[0]) + align(lang, s_mat, b_mat, a[1:], b)
+    # if len(a) == 2 and len(b) == 2:
+    #     b_mat[-1][-1] = score(lang, s_mat, a[0], b[0])
+    #     return b_mat
+    print(b_mat)
+    if (len(a)==0) and (len(b)==0):
+        return b_mat
+        # return 0
+    elif len(a)==0:
+        b_mat[0][len(b)] = score(lang, s_mat, "-", b[0]) + align(lang, s_mat, b_mat, a, b[1:])[0][len(b)-1]
+        return b_mat
+        # return score(lang, s_mat, a[0], b[0]) + align(lang, s_mat, b_mat, a, b[1:])
+    elif len(b)==1:
+        b_mat[len(a)][0] = score(lang, s_mat, a[0], "-") + align(lang, s_mat, b_mat, a[1:], b)[len(a)-1][0]
+        return b_mat
+        # return score(lang, s_mat, a[0], b[0]) + align(lang, s_mat, b_mat, a[1:], b)
     else:
-        return max(
-            score(lang, s_mat, a[0], b[0]) + align(lang, s_mat, b_mat, a[1:], b[1:]),
-            score(lang, s_mat, "-", b[0]) + align(lang, s_mat, b_mat, a, b[1:]),
-            score(lang, s_mat, a[0], "-") + align(lang, s_mat, b_mat, a[1:], b)
-        )
+        b_mat[len(a)][len(b)] = score(lang, s_mat, a[0], b[0]) + align(lang, s_mat, b_mat, a[1:], b[1:])[len(a)-1][len(b)-1]
+        b_mat[len(a)][len(b) - 1] = score(lang, s_mat, "-", b[0]) + align(lang, s_mat, b_mat, a, b[1:])[len(a) - 1][len(b)]
+        b_mat[len(a) - 1][len(b)] = score(lang, s_mat, a[0], "-") + align(lang, s_mat, b_mat, a[1:], b)[len(a)][len(b)-1]
+        return b_mat
+        # return max(
+        #     score(lang, s_mat, a[0], b[0]) + align(lang, s_mat, b_mat, a[1:], b[1:]),
+        #     score(lang, s_mat, "-", b[0]) + align(lang, s_mat, b_mat, a, b[1:]),
+        #     score(lang, s_mat, a[0], "-") + align(lang, s_mat, b_mat, a[1:], b)
+        # )
 
 
 if __name__ == '__main__':
-    language = "ABC"
-    score_matrix = [[1, -1, -2, -1],
-                    [-1, 2, -4, -1],
-                    [-2, -4, 3, -2],
-                    [-1, -1, -2, 0]]
-    seq_a = "AAAAC"
-    seq_b = "ABAC"
+    language = "ACG"
+    score_matrix = [[1, -1, -1, -2],
+                    [-1, 1, -1, -2],
+                    [-1, -1, 1, -2],
+                    [-2, -2, -2, 0]]
+    seq_a = "AAAC"
+    seq_b = "AGC"
+
+    # language = "ABC"
+    # score_matrix = [[1, -1, -2, -1],
+    #                 [-1, 2, -4, -1],
+    #                 [-2, -4, 3, -2],
+    #                 [-1, -1, -2, 0]]
+    # seq_a = "ABAAC"
+    # seq_b = "ABAC"
 
     print(dynprog(language, score_matrix, seq_a, seq_b))
