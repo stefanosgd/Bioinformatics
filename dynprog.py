@@ -5,10 +5,12 @@ def dynprog(lang, s_mat, a, b):
     a = "-" + a
     b = "-" + b
     backtrack = np.zeros((len(a), len(b)), dtype=np.int)
-    backtrack = align(lang, s_mat, backtrack, a, b)
+    direction = np.zeros((len(a), len(b)), dtype=np.str)
+    direction[:] = "E"
+    backtrack, direction = align(lang, s_mat, backtrack, direction, a, b)
     ind = np.unravel_index(np.argmax(backtrack, axis=None), backtrack.shape)
     final_score = np.amax(backtrack)
-    out_a, out_b = create_alignment(backtrack, ind, a, b)
+    out_a, out_b = create_alignment(backtrack, direction, ind, a, b)
     return [final_score, out_a, out_b]
 
 
@@ -21,7 +23,7 @@ def score(lang, s_mat, a, b):
         return s_mat[lang.index(a)][lang.index(b)]
 
 
-def align(lang, s_mat, b_mat, a, b):
+def align(lang, s_mat, b_mat, d_mat, a, b):
     for i in range(1, len(a)):
         for j in range(1, len(b)):
             b_mat[i, j] = max(0,
@@ -29,34 +31,32 @@ def align(lang, s_mat, b_mat, a, b):
                               b_mat[i-1][j] + score(lang, s_mat, a[i], "-"),
                               b_mat[i][j-1] + score(lang, s_mat, "-", b[j])
                               )
-    return b_mat
+            if b_mat[i, j] == b_mat[i - 1][j - 1] + score(lang, s_mat, a[i], b[j]):
+                d_mat[i, j] = "D"
+            elif b_mat[i, j] == b_mat[i-1][j] + score(lang, s_mat, a[i], "-"):
+                d_mat[i, j] = "U"
+            else:
+                d_mat[i, j] = "L"
+                              
+    return b_mat, d_mat
 
 
-def create_alignment(b_mat, start, a, b):
-    prev_mov = 1
+def create_alignment(b_mat, d_mat, start, a, b):
     previous_a = start[0]
     previous_b = start[1]
     output = [[], []]
     while previous_a > 0 and previous_b > 0:
-        if prev_mov == 1:
-            output[0].insert(0, previous_a - 1)
-            output[1].insert(0, previous_b - 1)
-
-        next_value = max(
-            b_mat[previous_a - 1][previous_b - 1],
-            b_mat[previous_a - 1][previous_b],
-            b_mat[previous_a][previous_b - 1]
-        )
-        if next_value == b_mat[previous_a - 1][previous_b - 1]:
+        if d_mat[previous_a][previous_b] == "D":
             previous_a -= 1
             previous_b -= 1
-            prev_mov = 1
-        elif next_value == b_mat[previous_a - 1][previous_b]:
+            output[0].insert(0, previous_a)
+            output[1].insert(0, previous_b)
+        elif d_mat[previous_a][previous_b] == "U":
             previous_a -= 1
-            prev_mov = 0
-        elif next_value == b_mat[previous_a][previous_b - 1]:
+        elif d_mat[previous_a][previous_b] == "L":
             previous_b -= 1
-            prev_mov = 0
+        elif d_mat[previous_a][previous_b] == "E":
+            break
 
     return output
 
@@ -81,6 +81,15 @@ if __name__ == '__main__':
     seq_b = "TACTAA"
     print(dynprog(language, score_matrix, seq_a, seq_b))
 
+    language = "ABC"
+    score_matrix = [[1, -1, -2, -1],
+                   [-1, 2, -4, -1],
+                   [-2, -4, 3, -2],
+                   [-1, -1, -2, 0]]
+    seq_a = "ABCACA"
+    seq_b = "BAACB"
+    print(dynprog(language, score_matrix, seq_a, seq_b))
+
     language = "CTGA"
     score_matrix = [[3, -3, -3, -3, -2],
                     [-3, 3, -3, -3, -2],
@@ -89,4 +98,13 @@ if __name__ == '__main__':
                     [-2, -2, -2, -2, 0]]
     seq_a = "GGTTGACTA"
     seq_b = "TGTTACGG"
+    print(dynprog(language, score_matrix, seq_a, seq_b))
+
+    language = "ABC"
+    score_matrix = [[1,-1,-2,-1],
+                    [-1,2,-4,-1],
+                    [-2,-4,3,-2],
+                    [-1,-1,-2,0]]
+    seq_a = "AABBAACA"
+    seq_b = "CBACCCBA"
     print(dynprog(language, score_matrix, seq_a, seq_b))

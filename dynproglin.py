@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def dynprog(lang, s_mat, a, b):
+def dynproglin(lang, s_mat, a, b):
     a = "-" + a
     b = "-" + b
     backtrack = np.zeros((len(a), len(b)), dtype=np.int)
@@ -70,7 +70,7 @@ if __name__ == '__main__':
                     [-7, -7, -7, -7, 0]]
     seq_a = "CTCGTC"
     seq_b = "AGCGTAG"
-    print(dynprog(language, score_matrix, seq_a, seq_b))
+    print(dynproglin(language, score_matrix, seq_a, seq_b))
 
     language = "TCA"
     score_matrix = [[1, -1, -1, -2],
@@ -79,7 +79,16 @@ if __name__ == '__main__':
                    [-2, -2, -2, 0]]
     seq_a = "TAATA"
     seq_b = "TACTAA"
-    print(dynprog(language, score_matrix, seq_a, seq_b))
+    print(dynproglin(language, score_matrix, seq_a, seq_b))
+    
+    language = "ABC"
+    score_matrix = [[1, -1, -2, -1],
+                   [-1, 2, -4, -1],
+                   [-2, -4, 3, -2],
+                   [-1, -1, -2, 0]]
+    seq_a = "ABCACA"
+    seq_b = "BAACB"
+    print(dynproglin(language, score_matrix, seq_a, seq_b))
 
     language = "CTGA"
     score_matrix = [[3, -3, -3, -3, -2],
@@ -88,5 +97,14 @@ if __name__ == '__main__':
                     [-3, -3, -3, 3, -2],
                     [-2, -2, -2, -2, 0]]
     seq_a = "GGTTGACTA"
-    seq_b = "TGTTACGG"
-    print(dynprog(language, score_matrix, seq_a, seq_b))
+    seq_b = "TGTT_ACGG"
+    print(dynproglin(language, score_matrix, seq_a, seq_b))
+
+    language = "ABC"
+    score_matrix = [[1,-1,-2,-1],
+                    [-1,2,-4,-1],
+                    [-2,-4,3,-2],
+                    [-1,-1,-2,0]]
+    seq_a = "AABBAACA"
+    seq_b = "CBACCCBA"
+    print(dynproglin(language, score_matrix, seq_a, seq_b))
