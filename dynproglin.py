@@ -73,8 +73,8 @@ def dynproglin(lang, s_mat, a, b):
     final_score, start_point, end_point = align(backtrack)
     # print(final_score, start_point, end_point)
     return [final_score, start_point, end_point]
-    out_a, out_b = create_alignment(backtrack, ind)
-    return [final_score, out_a, out_b]
+    # out_a, out_b = create_alignment(backtrack, ind)
+    # return [final_score, out_a, out_b]
 
 
 if __name__ == '__main__':
