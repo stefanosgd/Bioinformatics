@@ -36,10 +36,12 @@ def dynprog(lang, s_mat, a, b):
                 prev_a -= 1
             elif b_mat[prev_a][prev_b] == b_mat[prev_a][prev_b - 1] + score("-", b[prev_b - 1]):
                 prev_b -= 1
-            if b_mat[prev_a][prev_b] == 0:
+            elif b_mat[prev_a][prev_b] == 0:
                 end = True
         return output
 
+    if len(a) == 0 or len(b) == 0:
+        return [0, [], []]
     backtrack = np.zeros((len(a) + 1, len(b) + 1), dtype=np.int)
     backtrack = align(backtrack)
     # print(backtrack)
@@ -85,7 +87,7 @@ if __name__ == '__main__':
                     [-3, -3, -3, 3, -2],
                     [-2, -2, -2, -2, 0]]
     seq_a = "GGTTGACTA"
-    seq_b = "GGTTGACTA"
+    seq_b = "TGTTACGG"
     print(dynprog(language, score_matrix, seq_a, seq_b))
 
     language = "ABC"
