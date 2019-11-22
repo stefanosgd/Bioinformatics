@@ -2,7 +2,6 @@ import numpy as np
 
 
 def dynproglin(lang, s_mat, a, b):
-
     def score(i, j):
         if i == "-":
             return s_mat[-1][lang.index(j)]
@@ -11,39 +10,24 @@ def dynproglin(lang, s_mat, a, b):
         else:
             return s_mat[lang.index(i)][lang.index(j)]
 
-    def align():
-        b_mat = np.zeros((2, len(b) + 1), dtype=(np.int, 3))
+    def align(string_a, string_b):
+        b_mat = np.zeros((2, len(string_b) + 1), dtype=np.int)
         max_res = 0
         end_pos = (0, 0)
-        start_pos = (0, 0)
-        for i in range(1, len(a) + 1):
-            for j in range(1, len(b) + 1):
-                b_mat[1, j][0] = max(0,
-                                     b_mat[0][j - 1][0] + score(a[i - 1], b[j - 1]),
-                                     b_mat[0][j][0] + score(a[i - 1], "-"),
-                                     b_mat[1][j - 1][0] + score("-", b[j - 1])
-                                     )
-                if (b_mat[1, j][0] == b_mat[0][j - 1][0] + score(a[i - 1], b[j - 1])) and \
-                        (b_mat[0, j - 1][1] != 0 and b_mat[0, j - 1][2] != 0):
-                    b_mat[1, j][1], b_mat[1, j][2] = b_mat[0, j - 1][1], b_mat[0, j - 1][2]
-                elif b_mat[1, j][0] == b_mat[0][j][0] + score(a[i - 1], "-") and \
-                        (b_mat[0, j][1] != 0 and b_mat[0, j][2] != 0):
-                    b_mat[1, j][1], b_mat[1, j][2] = b_mat[0, j][1], b_mat[0, j][2]
-                elif b_mat[1, j][0] == b_mat[1][j - 1][0] + score("-", b[j - 1]) and \
-                        (b_mat[1, j - 1][1] != 0 and b_mat[1, j - 1][2] != 0):
-                    b_mat[1, j][1], b_mat[1, j][2] = b_mat[1, j - 1][1], b_mat[1, j - 1][2]
-                elif b_mat[1, j][0] == 0:
-                    pass
-                else:
-                    b_mat[1, j][1], b_mat[1, j][2] = i, j
+        for i in range(1, len(string_a) + 1):
+            for j in range(1, len(string_b) + 1):
+                b_mat[1, j] = max(0,
+                                  b_mat[0][j - 1] + score(string_a[i - 1], string_b[j - 1]),
+                                  b_mat[0][j] + score(string_a[i - 1], "-"),
+                                  b_mat[1][j - 1] + score("-", string_b[j - 1])
+                                  )
 
-                if b_mat[1, j][0] > max_res:
-                    max_res = b_mat[1, j][0]
+                if b_mat[1, j] > max_res:
+                    max_res = b_mat[1, j]
                     end_pos = (i, j)
-                    start_pos = (b_mat[1, j][1], b_mat[1, j][2])
             b_mat = np.delete(b_mat, 0, 0)
-            b_mat = np.row_stack((b_mat, np.zeros((1, len(b) + 1), dtype=(np.int, 3))))
-        return max_res, start_pos, end_pos
+            b_mat = np.row_stack((b_mat, np.zeros((1, len(string_b) + 1), dtype=np.int)))
+        return max_res, end_pos
 
     def path(match_a, match_b):
         output = [[], []]
@@ -51,28 +35,28 @@ def dynproglin(lang, s_mat, a, b):
             return output
         b_mat = np.zeros((len(match_a) + 1, len(match_b) + 1), dtype=np.int)
         for i in range(1, len(match_a) + 1):
-            b_mat[i, 0] = b_mat[i-1, 0] + score(match_a[i-1], "-")
+            b_mat[i, 0] = b_mat[i - 1, 0] + score(match_a[i - 1], "-")
         for i in range(1, len(match_b) + 1):
-            b_mat[0, i] = b_mat[0, i-1] + score("-", match_b[i-1])
+            b_mat[0, i] = b_mat[0, i - 1] + score("-", match_b[i - 1])
         for i in range(1, len(match_a) + 1):
             for j in range(1, len(match_b) + 1):
-                b_mat[i, j] = max(b_mat[i-1][j-1] + score(match_a[i-1], match_b[j-1]),
-                                  b_mat[i-1][j] + score(match_a[i-1], "-"),
-                                  b_mat[i][j-1] + score("-", match_b[j-1])
+                b_mat[i, j] = max(b_mat[i - 1][j - 1] + score(match_a[i - 1], match_b[j - 1]),
+                                  b_mat[i - 1][j] + score(match_a[i - 1], "-"),
+                                  b_mat[i][j - 1] + score("-", match_b[j - 1])
                                   )
         prev_a, prev_b = b_mat.shape[0] - 1, b_mat.shape[1] - 1
 
         while True:
             if prev_a == 0 and prev_b == 0:
                 break
-            if b_mat[prev_a][prev_b] == b_mat[prev_a-1][prev_b-1] + score(match_a[prev_a-1], match_b[prev_b-1]):
+            if b_mat[prev_a][prev_b] == b_mat[prev_a - 1][prev_b - 1] + score(match_a[prev_a - 1], match_b[prev_b - 1]):
                 prev_a -= 1
                 prev_b -= 1
                 output[0].insert(0, prev_a)
                 output[1].insert(0, prev_b)
-            elif b_mat[prev_a][prev_b] == b_mat[prev_a][prev_b-1] + score("-", match_b[prev_b-1]):
+            elif b_mat[prev_a][prev_b] == b_mat[prev_a][prev_b - 1] + score("-", match_b[prev_b - 1]):
                 prev_b -= 1
-            elif b_mat[prev_a][prev_b] == b_mat[prev_a-1][prev_b] + score(match_a[prev_a-1], "-"):
+            elif b_mat[prev_a][prev_b] == b_mat[prev_a - 1][prev_b] + score(match_a[prev_a - 1], "-"):
                 prev_a -= 1
         return output
 
@@ -81,7 +65,7 @@ def dynproglin(lang, s_mat, a, b):
         for i in range(1, len(string_b) + 1):
             b_mat[0, i] = b_mat[0][i - 1] + score("-", string_b[i - 1])
         for i in range(1, len(string_a) + 1):
-            b_mat[1, 0] = b_mat[0][0] + score(string_a[i-1], "-")
+            b_mat[1, 0] = b_mat[0][0] + score(string_a[i - 1], "-")
             for j in range(1, len(string_b) + 1):
                 b_mat[1, j] = max(b_mat[0][j - 1] + score(string_a[i - 1], string_b[j - 1]),
                                   b_mat[0][j] + score(string_a[i - 1], "-"),
@@ -104,7 +88,7 @@ def dynproglin(lang, s_mat, a, b):
         else:
             mid = (start_i + end_i) // 2
             pref = prefix_suffix(string_a[:mid], string_b)
-            suff = prefix_suffix(string_a[:mid-1:-1], string_b[::-1])[::-1]
+            suff = prefix_suffix(string_a[:mid - 1:-1], string_b[::-1])[::-1]
             j = 0
             maximum = np.NINF
             for n in range(len(suff)):
@@ -116,13 +100,17 @@ def dynproglin(lang, s_mat, a, b):
             output[0].extend(prev_out_a)
             output[1].extend(prev_out_b)
             prev_out_a, prev_out_b = create_alignment(string_a[mid:], string_b[j:])
-            output[0].extend([x+mid for x in prev_out_a])
-            output[1].extend([x+j for x in prev_out_b])
+            output[0].extend([x + mid for x in prev_out_a])
+            output[1].extend([x + j for x in prev_out_b])
         return output
 
-    final_score, start_point, end_point = align()
-    out_a, out_b = create_alignment(a[start_point[0]-1:end_point[0]], b[start_point[1]-1:end_point[1]])
-    return [final_score, [x+start_point[0]-1 for x in out_a], [x+start_point[1]-1 for x in out_b]]
+    final_score, end_point = align(a, b)
+    final_score, start_point = align(a[end_point[0]-1::-1], b[end_point[1]-1::-1])
+    print(a[end_point[0]-1::-1], b[end_point[1]-1::-1])
+    print(start_point, end_point)
+    exit()
+    out_a, out_b = create_alignment(a[start_point[0] - 1:end_point[0]], b[start_point[1] - 1:end_point[1]])
+    return [final_score, [x + start_point[0] - 1 for x in out_a], [x + start_point[1] - 1 for x in out_b]]
 
 
 if __name__ == '__main__':

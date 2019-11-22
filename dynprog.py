@@ -61,7 +61,7 @@ if __name__ == '__main__':
     seq_a = "CTCGTC"
     seq_b = "AGCGTAG"
     print(dynprog(language, score_matrix, seq_a, seq_b))
-
+    exit()
     language = "TCA"
     score_matrix = [[1, -1, -1, -2],
                     [-1, 1, -1, -2],
