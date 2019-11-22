@@ -187,4 +187,4 @@ if __name__ == '__main__':
     print([81, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 40, 41, 42, 43, 44, 45, 46, 47, 48, 50, 51, 52, 53, 54, 55, 56, 57, 58],
            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 61, 62, 63, 64, 65, 66, 67, 68, 69]
            ] == dynproglin(language, score_matrix, seq_a, seq_b))
-    print(start_time - time.perf_counter())
+    print(time.perf_counter() - start_time)
