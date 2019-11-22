@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 
 def dynproglin(lang, s_mat, a, b):
@@ -12,7 +13,7 @@ def dynproglin(lang, s_mat, a, b):
 
     def align(string_a, string_b):
         b_mat = np.zeros((2, len(string_b) + 1), dtype=np.int)
-        max_res = 0
+        max_res = np.NINF
         end_pos = (0, 0)
         for i in range(1, len(string_a) + 1):
             for j in range(1, len(string_b) + 1):
@@ -21,7 +22,6 @@ def dynproglin(lang, s_mat, a, b):
                                   b_mat[0][j] + score(string_a[i - 1], "-"),
                                   b_mat[1][j - 1] + score("-", string_b[j - 1])
                                   )
-
                 if b_mat[1, j] > max_res:
                     max_res = b_mat[1, j]
                     end_pos = (i, j)
@@ -105,15 +105,16 @@ def dynproglin(lang, s_mat, a, b):
         return output
 
     final_score, end_point = align(a, b)
-    final_score, start_point = align(a[end_point[0]-1::-1], b[end_point[1]-1::-1])
-    print(a[end_point[0]-1::-1], b[end_point[1]-1::-1])
-    print(start_point, end_point)
-    exit()
-    out_a, out_b = create_alignment(a[start_point[0] - 1:end_point[0]], b[start_point[1] - 1:end_point[1]])
+    new_a, new_b = a[end_point[0]-1::-1], b[end_point[1]-1::-1]
+    _, start_point = align(a[end_point[0]-1::-1], b[end_point[1]-1::-1])
+    new_a, new_b = new_a[start_point[0]-1::-1], new_b[start_point[1]-1::-1]
+    start_point = len(a) - start_point[0] - (len(a) - end_point[0] - 1), len(b) - start_point[1] - (len(b) - end_point[1] - 1)
+    out_a, out_b = create_alignment(new_a, new_b)
     return [final_score, [x + start_point[0] - 1 for x in out_a], [x + start_point[1] - 1 for x in out_b]]
 
 
 if __name__ == '__main__':
+    start_time = time.perf_counter()
     language = "CTGA"
     score_matrix = [[10, -5, -5, -5, -7],
                     [-5, 10, -5, -5, -7],
@@ -186,3 +187,4 @@ if __name__ == '__main__':
     print([81, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 40, 41, 42, 43, 44, 45, 46, 47, 48, 50, 51, 52, 53, 54, 55, 56, 57, 58],
            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 61, 62, 63, 64, 65, 66, 67, 68, 69]
            ] == dynproglin(language, score_matrix, seq_a, seq_b))
+    print(start_time - time.perf_counter())
