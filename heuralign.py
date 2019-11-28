@@ -107,6 +107,8 @@ def heuralign(lang, s_mat, a, b):
         diag_index = get_diagonals(index, seed_length)
         diag_score = score_diagonals(diag_index)
 
+    if len(a) == 0 or len(b) == 0:
+        return [0, [], []]
     max_diag = max(diag_score, key=diag_score.get)
     band_width = max(((len(a)+1) // 2) + 1, ((len(b)+1) // 2) + 1)
     backtrack = np.zeros((len(a) + 1, len(b) + 1), dtype=np.int)

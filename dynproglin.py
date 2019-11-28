@@ -110,6 +110,10 @@ def dynproglin(lang, s_mat, a, b):
     new_a, new_b = new_a[start_point[0]-1::-1], new_b[start_point[1]-1::-1]
     start_point = len(a) - start_point[0] - (len(a) - end_point[0] - 1), len(b) - start_point[1] - (len(b) - end_point[1] - 1)
     out_a, out_b = create_alignment(new_a, new_b)
+    if final_score == np.NINF:
+        final_score = 0
+    if (len(a) == 1 and len(b) == 1) and a != b:
+        out_a, out_b = [], []
     return [final_score, [x + start_point[0] - 1 for x in out_a], [x + start_point[1] - 1 for x in out_b]]
 
 
