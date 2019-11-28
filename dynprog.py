@@ -2,6 +2,7 @@ import numpy as np
 
 
 def dynprog(lang, s_mat, a, b):
+
     def score(i, j):
         if i == "-":
             return s_mat[-1][lang.index(j)]
@@ -43,7 +44,6 @@ def dynprog(lang, s_mat, a, b):
         return [0, [], []]
     backtrack = np.zeros((len(a) + 1, len(b) + 1), dtype=np.int)
     backtrack = align(backtrack)
-    # print(backtrack)
     ind = np.unravel_index(np.argmax(backtrack, axis=None), backtrack.shape)
     final_score = np.amax(backtrack)
     out_a, out_b = create_alignment(backtrack, ind)
