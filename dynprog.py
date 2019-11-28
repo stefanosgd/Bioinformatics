@@ -2,7 +2,6 @@ import numpy as np
 
 
 def dynprog(lang, s_mat, a, b):
-
     def score(i, j):
         if i == "-":
             return s_mat[-1][lang.index(j)]
