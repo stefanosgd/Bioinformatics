@@ -99,9 +99,6 @@ def heuralign(lang, s_mat, a, b):
     diag_index = get_diagonals(index, seed_length)
     diag_score = score_diagonals(diag_index)
     while len(diag_index) < 5:
-        index = {}
-        diag_index = {}
-        diag_score = {}
         seed_length -= 1
         index = get_index(seed_length)
         diag_index = get_diagonals(index, seed_length)
