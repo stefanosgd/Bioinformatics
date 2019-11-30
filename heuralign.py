@@ -44,29 +44,29 @@ def heuralign(lang, s_mat, a, b):
         for in_a in range(len(b) - (k - 1)):
             word = b[in_a:in_a + k]
             if word in index_table:
-                for i in index_table[word]:
+                for in_b in index_table[word]:
                     try:
-                        diagonals[(i - in_a)].append((i, in_a))
+                        diagonals[(in_b - in_a)].append((in_a, in_b))
                     except:
-                        diagonals[(i - in_a)] = [(i, in_a)]
+                        diagonals[(in_b - in_a)] = [(in_a, in_b)]
         return diagonals
 
     def score_diagonals(diagonal_index):
+        min_score = -2
         diagonal_score = {}
-        min_score = -1
         for offset in diagonal_index:
-            scoring = 1
-            current_max = scoring
+            scoring = 0
+            current_max = np.NINF
             coords = diagonal_index[offset]
-            if len(coords) >= 2:
-                for i in range(len(coords) - 1):
+            if len(coords) >= 1:
+                for i in range(len(coords)-1):
                     diff = coords[i + 1][0] - coords[i][0]
                     if diff == 1:
                         scoring += 1
                     elif (scoring - diff) <= min_score:
                         if scoring > current_max:
                             current_max = scoring
-                        scoring = 1
+                        scoring = 0
                     else:
                         scoring -= diff
 
@@ -94,20 +94,26 @@ def heuralign(lang, s_mat, a, b):
                 end = True
         return output
 
-    seed_length = 3
+    if len(a) == 0 or len(b) == 0:
+        return [0, [], []]
+    seed_length = 4
     index = get_index(seed_length)
     diag_index = get_diagonals(index, seed_length)
     diag_score = score_diagonals(diag_index)
-    while len(diag_index) < 5:
+    while len(diag_index) < 4 and seed_length > 0:
         seed_length -= 1
         index = get_index(seed_length)
         diag_index = get_diagonals(index, seed_length)
         diag_score = score_diagonals(diag_index)
 
-    if len(a) == 0 or len(b) == 0:
-        return [0, [], []]
-    max_diag = max(diag_score, key=diag_score.get)
-    band_width = max(((len(a)+1) // 2) + 1, ((len(b)+1) // 2) + 1)
+    max_diagonals = []
+    for diagonal in range(min(len(diag_score)-1, 5)):
+        max_diagonals.append(max(diag_score, key=diag_score.get))
+        diag_score.pop(max_diagonals[diagonal])
+
+    max_diag = (min(max_diagonals) + max(max_diagonals)) // 2
+    band_width = max(abs(max(max_diagonals) - max_diag) + 5, abs(min(max_diagonals) - max_diag) + 5)
+
     backtrack = np.zeros((len(a) + 1, len(b) + 1), dtype=np.int)
     backtrack = align(max_diag, backtrack, band_width)
     ind = np.unravel_index(np.argmax(backtrack, axis=None), backtrack.shape)
@@ -174,8 +180,8 @@ if __name__ == '__main__':
     seq_a = "AAAAACCDDCCDDAAAAACC"
     seq_b = "CCAAADDAAAACCAAADDCCAAAA"
     print([39, [5, 6, 7, 8, 9, 10, 11, 12, 18, 19], [0, 1, 5, 6, 11, 12, 16, 17, 18, 19]] == heuralign(language,
-                                                                                                     score_matrix,
-                                                                                                     seq_a, seq_b))
+                                                                                                       score_matrix,
+                                                                                                       seq_a, seq_b))
 
     seq_a = "AACAAADAAAACAADAADAAA"
     seq_b = "CDCDDD"
